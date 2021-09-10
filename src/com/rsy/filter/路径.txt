@@ -1,0 +1,43 @@
+        System.out.println("servletPath:"+req.getServletPath());
+		System.out.println("contextPath:"+req.getContextPath());
+		System.out.println("contextPath2:"+req.getServletContext().getContextPath());
+		System.out.println("pageInfo:"+req.getPathInfo());
+		System.out.println("uri:"+req.getRequestURI());
+		System.out.println("url:"+req.getRequestURL());
+		System.out.println("realPath:"+req.getServletContext().getRealPath("/"));
+
+        <servlet>
+            <servlet-name>test</servlet-name>
+            <servlet-class>com.java.test.TestServlet</servlet-class>
+
+        </servlet>
+
+        <servlet-mapping>
+            <servlet-name>test</servlet-name>
+            <url-pattern>/abc/def/*</url-pattern><!-- 注意此处 -->
+        </servlet-mapping>
+
+
+
+结果：
+        请求http://localhost:8080/testweb/abc/def/ghi/test.html (url-pattern=/abc/def/*)
+        打印的值为：
+
+        servletPath:/abc/def
+        contextPath:/testweb
+        contextPath2:/testweb
+        pageInfo:/ghi/test.html
+        uri:/testweb/abc/def/ghi/test.html
+        url:http://localhost:8080/testweb/abc/def/ghi/test.html
+        realPath:G:\java\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\testweb\
+
+getServletPath():获取能够与“url-pattern”中匹配的路径，注意是完全匹配的部分，*的部分不包括。
+getPathInfo():与getServletPath()获取的路径互补，能够得到的是“url-pattern”中*d的路径部分
+getContextPath():获取项目的根路径
+getRequestURI:获取根路径到地址结尾
+getRequestURL:获取请求的地址链接（浏览器中输入的地址）
+getServletContext().getRealPath("/"):获取“/”在机器中的实际地址
+getScheme():获取的是使用的协议(http 或https)
+getProtocol():获取的是协议的名称(HTTP/1.11)
+getServerName():获取的是域名(xxx.com)
+

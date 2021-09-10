@@ -1,0 +1,110 @@
+1.浏览器含有一个UI线程，该线程转门负责页面展示 在提交表单时UI线程会发送请求，会将原页面内容清空。
+    页面从由----->无-------->有
+
+2.只有表单可以提交POST请求，AJAX在做请求前必须设置响应头内容类型 form中含有enctype属性
+    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+    解决中文乱码
+    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded;charset=UTF-8");
+    POST发送的参数在.send()中写入。
+    在很早之前的IE浏览器上可能存在兼容问题（百度）
+    为了防止浏览器GET缓存 可以给其时间戳  .open("GET","/egov/saveAdd?_="+new Date().getTime()+"&usercode="+usercode,true);
+
+3.request.getContextPath()是为了解决相对路径的问题，可返回站点的根路径。
+
+4.在mysql中where后面的条件是从左往右执行的(Oracle从右往左)，所以把过滤数据量大的条件放左边先执行。
+
+5.  作用是将页面中的相对路径改为绝对路径-----> 默认是从<base>标签指定的路径下开始执行---标签为页面上的所有链接规定默认地址或默认目标。
+    <base  href="http://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/">
+    <%
+      String path = request.getContextPath();
+      String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+    %>
+    <base href="<%=basePath%>">
+    request.getSchema()可以返回当前页面使用的协议，http 或是 https;
+    request.getServerName()可以返回当前页面所在的服务器的名字;
+    request.getServerPort()可以返回当前页面所在的服务器使用的端口,就是80;
+    request.getContextPath()可以返回当前页面所在的应用的名字;
+
+    (1)base 标签必须写在head 标签内部,切其是一个html标签
+    (2)base 标签必须在所有“带具体路径”的标签的前面
+    (3)serverName 部分EL 表达式和serverPort 部分EL 表达式之间必须写“:”
+    (4)serverPort 部分EL表达式和contextPath 部分EL 表达式之间绝对不能写“/”
+    原因：contextPath 部分EL 表达式本身就是“/”开头 如果多写一个“/”会干扰Cookie 的工作机制
+    (5)serverPort 部分EL 表达式后面必须写“/”
+    (6)页面中的链接不能加“/” 只对相对路径起作用
+
+6.  select i.invregnum,i.invname,i.regdate,i.city,u.username from t_invest as i join t_user as u on i.usercode=u.usercode where 1=1
+    where 1=1 占位的作用 使其拼接字符串时候使用and
+    与select i.invregnum,i.invname,i.regdate,i.city,u.username from t_invest as i join t_user as u on i.usercode=u.usercode查询结果相同
+
+7.給？号赋值====可以使用list集合====list集合中存放？====其size方法返回多少个元素=====可以确定？的下标
+
+8.el表达式
+     ${param.name} 等价于 request.getParamter("name")，这两种方法一般用于服务器从页面或者客户端获取的内容。
+     {requestScope.name} 等价于 request.getAttribute("name")，一般是从服务器传递结果到页面，在页面中取出服务器保存的值。
+
+9.使用反射机制封装request.getParameter("");——————>WebUtil.java
+    原理：使用反射获取传过来的Object对象（entity下的类）接受request
+        获取需要调用的方法的字节码片段（ Method setMethod = c.getDeclaredMethod(methodName【方法名】, String.class【行参】)）
+        调用invoke方法赋值（setMethod.invoke(obj, request.getParameter(fieldName)【获取前端传递过来的参数作为实参传递】);）
+        方法名获取：使用  Enumeration<String> parameterNames = request.getParameterNames();//获取前端标签中的name
+            -----while (parameterNames.hasMoreElements()) {
+                        String fieldName = parameterNames.nextElement();--->获取属性名<---
+                        String methodName = "set" + fieldName.toUpperCase().charAt(0) + fieldName.substring(1);-》-》-》获取方法名
+
+10. 过滤器filter生命周期：
+        *在Tomcat启动阶段解析web,xml文件时被创建出来
+        *servlet在第一次访问时被创建出来（在过滤器使用中先被创建出来，使链条串上，再执行doFilter中的内容）（可以通过配置让其在服务器启动时被创建出来
+                                       <load-on-startup>）
+            --其都是单列模式(只创建一次)
+
+11. <servlet>
+        <init-param>
+            <param-name>name</param-name>
+            <param-value>value</param-value>
+        </init-param>
+    </servlet>
+    <!--servlet的初始化参数，这些配置信息被自动封装到ServletConfig对象中-->
+    filter初始化参数一样 调用方法String s=config.getInitParameter("construction");
+        **Collection集合中的contains():boolean contains(Object o) 判断 集合中 是否 包含指定的元素
+  <context-param>被封装到ServletContext
+
+12. ${param.name} 等价于 request.getParamter("name")，这两种方法一般用于服务器从页面或者客户端获取的内容。
+    ${requestScope.name} 等价于 request.getAttribute("name")，一般是从服务器传递结果到页面，在页面中取出服务器保存的值。
+
+13. 子页面要向父页面传值，只要在document前面加window.opener.父窗口的方法
+
+14.var tableRow = invListTable.insertRow(index); index-->表格现有的总行数[invListTable.rows.length;]
+     **表格末尾添加一行
+    tableRow.insertCell(0);添加列
+
+15.ThreadLocal：为了解决传值问题当代码需要给其他类里传递对象时 可以使用该类的set使其与当前线程绑定 原因是在程序运行过程中方法间的调用线程总是相同的都是当前调用的线程
+     该类底层有Map集合每一个线程的都是不同的，将线程与传递的值绑定，每一个线程都有自己new的对象所以将其绑定每一个绑定值是不同的 通过get方法取出------>像session,
+     一个用户一个session，每一个人的session是不同的   在程序运行完销毁new的对象时，需要先与当前线程解绑 服务器里是线程池 下一个线程有可能由再次拿到这个线程 此时没有解绑将会出错 remove()
+
+16.private static修饰的全局变量是线程共享一个对象，在jvm初始化时候把变量加载进来，让对象在运行的时候不需要再实列化就可以使用 静止的不变的 在类的加载过程中，JVM只为静态变量分配一次内存空间。所以是线程共享的
+    private 修饰的是私有化的只在当前类中使用
+
+17.      <!--使用以下标签可以配置过滤器的过滤规则：缺省时是REQUEST-->
+        <filter>
+           <filter-name>CheckLoginFilter</filter-name>
+           <filter-class>com.rsy.filter.CheckLoginFilter</filter-class>
+           <description>REQUEST</description>
+       </filter>
+18. 配置文件中的冲突可以使用在前面做一个标记
+    StringUtil.getTextBycode("cry."+requestScope.en.regcry)
+
+19. 文件上传 需要修改form表单的 enctype="multipart/form-data"
+    修改之后无法用request方式获取数据了
+
+20.一般jar使用方式 创建工厂 创建解析器
+
+21.//获取web下的文件目录的路径
+        **this.getServletContext().getRealPath("/temFile");
+
+22. var s = "hello";
+    s.substring(1);//就是从下标为1的字符（这里是'e'）开始起到字符串末尾全部截取,最终获得子串"ello"
+    s.substring(1，3);//相当于从位置为1的字符截取到位置为2的字符，得到子串为："el"
+
+    lastIndexOf() 方法可返回一个指定的字符串值最后出现的位置，在一个字符串中的指定位置从后向前搜索。
+
