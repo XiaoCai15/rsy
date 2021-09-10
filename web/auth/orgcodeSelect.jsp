@@ -9,6 +9,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 %>
 <html>
 <head>
+
     <base href="<%=basePath%>">
     <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
     <script type="text/javascript" src="clander/date.js"></script>
